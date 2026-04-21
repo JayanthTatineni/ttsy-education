@@ -1316,3 +1316,23 @@ Creating turbopack project { dir: 'C:\\Users\\Jayanth\\StudyApp', testMode: true
  GET /dashboard 200 in 278ms (next.js: 1647µs, proxy.ts: 117ms, application-code: 160ms)
  GET /dashboard 200 in 273ms (next.js: 1619µs, proxy.ts: 100ms, application-code: 172ms)
  GET /dashboard 200 in 556ms (next.js: 146ms, proxy.ts: 201ms, application-code: 209ms)
+ GET /dashboard 200 in 1222ms (next.js: 2ms, proxy.ts: 319ms, application-code: 901ms)
+ GET /dashboard/courses 200 in 884ms (next.js: 238ms, proxy.ts: 93ms, application-code: 553ms)
+ POST /dashboard/courses 200 in 987ms (next.js: 2ms, proxy.ts: 87ms, application-code: 898ms)
+  └─ ƒ updateCourseSelectionAction({"selected":true,"unitId":"857bdebf-44ab-4acf-a150-a235bd9f48ca"}) in 309ms src/actions/courses.ts
+ GET /dashboard 200 in 781ms (next.js: 1992µs, proxy.ts: 96ms, application-code: 682ms)
+ GET /learn/1/courses/math-number-stories 200 in 772ms (next.js: 106ms, proxy.ts: 116ms, application-code: 550ms)
+ GET /dashboard/courses 200 in 752ms (next.js: 1828µs, proxy.ts: 165ms, application-code: 585ms)
+ POST /dashboard/courses 200 in 1023ms (next.js: 1693µs, proxy.ts: 107ms, application-code: 915ms)
+  └─ ƒ updateCourseSelectionAction({"selected":true,"unitId":"00d38e34-2137-424a-82a6-11278d323aa2"}) in 322ms src/actions/courses.ts
+ GET /dashboard 200 in 916ms (next.js: 1727µs, proxy.ts: 121ms, application-code: 793ms)
+ GET /dashboard 200 in 1088ms (next.js: 1755µs, proxy.ts: 158ms, application-code: 928ms)
+ GET /dashboard/courses 200 in 812ms (next.js: 2ms, proxy.ts: 150ms, application-code: 660ms)
+ GET /dashboard 200 in 891ms (next.js: 1907µs, proxy.ts: 141ms, application-code: 748ms)
+ GET /learn/1/courses/math-number-stories 200 in 796ms (next.js: 7ms, proxy.ts: 135ms, application-code: 654ms)
+ GET /learn/1/math/addition-within-10 200 in 1293ms (next.js: 112ms, proxy.ts: 139ms, application-code: 1041ms)
+ GET /dashboard 200 in 1071ms (next.js: 2ms, proxy.ts: 290ms, application-code: 779ms)
+ GET /dashboard/progress 200 in 796ms (next.js: 99ms, proxy.ts: 91ms, application-code: 606ms)
+ GET /dashboard/classes 200 in 554ms (next.js: 110ms, proxy.ts: 103ms, application-code: 341ms)
+ POST /dashboard/classes 200 in 480ms (next.js: 1786µs, proxy.ts: 147ms, application-code: 331ms)
+  └─ ƒ joinClassAction({"joinCode":"676767"}) in 325ms src/actions/classroom.ts
