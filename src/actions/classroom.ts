@@ -4,8 +4,10 @@ import { revalidatePath } from "next/cache";
 import { requireEducator, requireStudent } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import {
+  assignStudentSchema,
   createClassSchema,
   joinClassSchema,
+  type AssignStudentValues,
   type CreateClassValues,
   type JoinClassValues,
 } from "@/lib/validation/classroom";
@@ -113,13 +115,29 @@ export async function joinClassAction(
     return { ok: false, message: "That class code was not found." };
   }
 
-  const { error } = await supabase.from("class_memberships").upsert(
-    {
-      class_id: classroom.id,
-      student_id: student.id,
-    },
-    { onConflict: "class_id,student_id" },
-  );
+  const { data: existingMembership, error: existingMembershipError } = await supabase
+    .from("class_memberships")
+    .select("id")
+    .eq("class_id", classroom.id)
+    .eq("student_id", student.id)
+    .maybeSingle();
+
+  if (existingMembershipError) {
+    return { ok: false, message: existingMembershipError.message };
+  }
+
+  if (existingMembership) {
+    return {
+      ok: true,
+      message: `You are already in ${classroom.name}.`,
+      id: classroom.id,
+    };
+  }
+
+  const { error } = await supabase.from("class_memberships").insert({
+    class_id: classroom.id,
+    student_id: student.id,
+  });
 
   if (error) {
     return { ok: false, message: error.message };
@@ -131,5 +149,40 @@ export async function joinClassAction(
     ok: true,
     message: `Joined ${classroom.name}.`,
     id: classroom.id,
+  };
+}
+
+export async function assignStudentToClassAction(
+  classId: string,
+  values: AssignStudentValues,
+): Promise<ClassroomActionState> {
+  await requireEducator();
+  const parsed = assignStudentSchema.safeParse(values);
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: parsed.error.issues[0]?.message ?? "Enter a valid student email.",
+    };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("assign_student_to_class", {
+    target_class_id: classId,
+    target_student_email: parsed.data.email,
+  });
+
+  if (error) {
+    return { ok: false, message: error.message };
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/classes");
+  revalidatePath(`/dashboard/classes/${classId}`);
+
+  return {
+    ok: true,
+    message: `Added ${parsed.data.email} to the class.`,
+    id: classId,
   };
 }

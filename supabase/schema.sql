@@ -352,6 +352,104 @@ as $$
   );
 $$;
 
+create or replace function public.assign_student_to_class(
+  target_class_id uuid,
+  target_student_email text
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  target_student_id uuid;
+begin
+  if auth.uid() is null then
+    raise exception 'Not authenticated.';
+  end if;
+
+  if not public.is_admin() and not public.owns_class(target_class_id) then
+    raise exception 'You can only assign students to your own class.';
+  end if;
+
+  select id
+  into target_student_id
+  from public.profiles
+  where lower(email) = lower(trim(target_student_email))
+    and role = 'student'
+  limit 1;
+
+  if target_student_id is null then
+    raise exception 'No student account was found for that email.';
+  end if;
+
+  insert into public.class_memberships (class_id, student_id)
+  values (target_class_id, target_student_id)
+  on conflict (class_id, student_id) do nothing;
+
+  return true;
+end;
+$$;
+
+create or replace function public.reset_own_account_data()
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_user_id uuid;
+begin
+  current_user_id := auth.uid();
+
+  if current_user_id is null then
+    raise exception 'Not authenticated.';
+  end if;
+
+  delete from public.student_course_selections
+  where student_id = current_user_id;
+
+  delete from public.question_attempts
+  where student_id = current_user_id;
+
+  delete from public.lesson_attempts
+  where student_id = current_user_id;
+
+  delete from public.lesson_progress
+  where student_id = current_user_id;
+
+  delete from public.class_memberships
+  where student_id = current_user_id;
+
+  delete from public.classes
+  where educator_id = current_user_id;
+
+  return true;
+end;
+$$;
+
+create or replace function public.delete_own_account()
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_user_id uuid;
+begin
+  current_user_id := auth.uid();
+
+  if current_user_id is null then
+    raise exception 'Not authenticated.';
+  end if;
+
+  delete from auth.users
+  where id = current_user_id;
+
+  return true;
+end;
+$$;
+
 alter table public.profiles enable row level security;
 alter table public.subjects enable row level security;
 alter table public.units enable row level security;

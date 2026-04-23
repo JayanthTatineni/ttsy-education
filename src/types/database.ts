@@ -349,7 +349,23 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      assign_student_to_class: {
+        Args: {
+          target_class_id: string;
+          target_student_email: string;
+        };
+        Returns: boolean;
+      };
+      reset_own_account_data: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      delete_own_account: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

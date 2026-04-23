@@ -49,7 +49,11 @@ export default async function ClassesPage() {
       {classes.length > 0 ? (
         <div className="grid gap-5 lg:grid-cols-2">
           {classes.map((classroom) => (
-            <ClassCard key={classroom.id} classroom={classroom} />
+            <ClassCard
+              key={classroom.id}
+              classroom={classroom}
+              href={`/dashboard/classes/${classroom.id}`}
+            />
           ))}
         </div>
       ) : (

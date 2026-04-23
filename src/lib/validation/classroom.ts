@@ -19,5 +19,13 @@ export const joinClassSchema = z.object({
     .transform((value) => value.trim().toUpperCase()),
 });
 
+export const assignStudentSchema = z.object({
+  email: z
+    .string()
+    .email("Enter a valid student email.")
+    .transform((value) => value.trim().toLowerCase()),
+});
+
 export type CreateClassValues = z.output<typeof createClassSchema>;
 export type JoinClassValues = z.output<typeof joinClassSchema>;
+export type AssignStudentValues = z.output<typeof assignStudentSchema>;

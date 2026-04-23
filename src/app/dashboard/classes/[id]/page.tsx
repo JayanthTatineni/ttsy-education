@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
+import { AssignStudentForm } from "@/components/dashboard/assign-student-form";
 import { ClassGrowthTable } from "@/components/dashboard/class-growth-table";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { gradeLabel } from "@/lib/constants";
@@ -40,6 +42,21 @@ export default async function ClassDetailPage({
           )}
           <Badge tone="yellow">Join code {classroom.join_code}</Badge>
         </div>
+
+        <section className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+          <AssignStudentForm classId={classroom.id} />
+          <Card>
+            <p className="text-sm font-black uppercase tracking-wide text-slate-500">
+              Teacher view
+            </p>
+            <div className="mt-3 space-y-2 text-sm font-bold text-slate-700">
+              <p>Completed lessons per student</p>
+              <p>Lessons attempted</p>
+              <p>Average best score</p>
+              <p>Latest activity date</p>
+            </div>
+          </Card>
+        </section>
 
         {classroom.students.length > 0 ? (
           <ClassGrowthTable classroom={classroom} />

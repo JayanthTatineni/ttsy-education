@@ -1,8 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #f8fafc;
   --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-soft: #f1f5f9;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text: #0f172a;
+  --text-soft: #334155;
+  --text-muted: #64748b;
+}
+
+html[data-theme="dark"] {
+  --background: #020617;
+  --foreground: #e2e8f0;
+  --surface: #0f172a;
+  --surface-soft: #111827;
+  --border: #334155;
+  --border-strong: #475569;
+  --text: #f8fafc;
+  --text-soft: #cbd5e1;
+  --text-muted: #94a3b8;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -32,6 +52,50 @@ input,
 select,
 textarea {
   letter-spacing: 0;
+}
+
+html[data-theme="dark"] .bg-white {
+  background-color: var(--surface) !important;
+}
+
+html[data-theme="dark"] .bg-slate-50,
+html[data-theme="dark"] body {
+  background-color: var(--background) !important;
+}
+
+html[data-theme="dark"] .bg-slate-100 {
+  background-color: var(--surface-soft) !important;
+}
+
+html[data-theme="dark"] .border-slate-200 {
+  border-color: var(--border) !important;
+}
+
+html[data-theme="dark"] .border-slate-300 {
+  border-color: var(--border-strong) !important;
+}
+
+html[data-theme="dark"] .text-slate-950,
+html[data-theme="dark"] .text-slate-900 {
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] .text-slate-700 {
+  color: var(--text-soft) !important;
+}
+
+html[data-theme="dark"] .text-slate-600,
+html[data-theme="dark"] .text-slate-500 {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] [class*="hover:bg-slate-100"]:hover,
+html[data-theme="dark"] [class*="hover:bg-slate-50"]:hover {
+  background-color: var(--surface-soft) !important;
+}
+
+html[data-theme="dark"] .shadow-sm {
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.35) !important;
 }
 
 @layer components {

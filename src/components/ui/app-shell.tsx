@@ -37,11 +37,14 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
                 <Link className="rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100" href="/dashboard">
                   Educator hub
                 </Link>
-                <Link className="rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100" href="/dashboard/classes">
+              <Link className="rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100" href="/dashboard/classes">
                   Classes
                 </Link>
                 <Link className="rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100" href="/learn">
                   Curriculum
+                </Link>
+                <Link className="rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100" href="/dashboard/settings">
+                  Settings
                 </Link>
               </>
             ) : (
@@ -57,6 +60,9 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
                 </Link>
                 <Link className="rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100" href="/dashboard/classes">
                   Teachers
+                </Link>
+                <Link className="rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100" href="/dashboard/settings">
+                  Settings
                 </Link>
               </>
             )}
