@@ -1,14 +1,19 @@
 import { notFound } from "next/navigation";
+import { AssignLessonForm } from "@/components/dashboard/assign-lesson-form";
 import { AssignStudentForm } from "@/components/dashboard/assign-student-form";
+import { ClassAssignmentSummary } from "@/components/dashboard/class-assignment-summary";
 import { ClassGrowthTable } from "@/components/dashboard/class-growth-table";
+import { StudentClassAssignments } from "@/components/dashboard/student-class-assignments";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { gradeLabel } from "@/lib/constants";
 import { requireLearner } from "@/lib/auth/session";
-import { getEducatorClassDetail, getStudentClasses } from "@/lib/services/classroom";
+import {
+  getEducatorClassDetail,
+  getStudentClassDetail,
+} from "@/lib/services/classroom";
 
 export default async function ClassDetailPage({
   params,
@@ -43,35 +48,44 @@ export default async function ClassDetailPage({
           <Badge tone="yellow">Join code {classroom.join_code}</Badge>
         </div>
 
-        <section className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+        <section className="grid gap-5 xl:grid-cols-[1fr_1fr_0.8fr]">
+          <AssignLessonForm
+            classId={classroom.id}
+            lessons={classroom.availableLessons.filter(
+              (lesson) => !classroom.assignments.some((assignment) => assignment.lesson_id === lesson.id),
+            )}
+          />
           <AssignStudentForm classId={classroom.id} />
           <Card>
             <p className="text-sm font-black uppercase tracking-wide text-slate-500">
               Teacher view
             </p>
             <div className="mt-3 space-y-2 text-sm font-bold text-slate-700">
-              <p>Completed lessons per student</p>
-              <p>Lessons attempted</p>
-              <p>Average best score</p>
-              <p>Latest activity date</p>
+              <p>Assign published lessons to the whole class</p>
+              <p>See assignment completion and scores</p>
+              <p>Track overall growth and latest activity</p>
             </div>
           </Card>
         </section>
 
-        {classroom.students.length > 0 ? (
+        <section className="space-y-4">
+          <PageHeader eyebrow="Assignments" title="Assigned lessons">
+            See how the class is doing on the work you assigned.
+          </PageHeader>
+          <ClassAssignmentSummary assignments={classroom.assignments} />
+        </section>
+
+        <section className="space-y-4">
+          <PageHeader eyebrow="Performance" title="Student growth">
+            Overall lesson progress stays here, with assignment signals tucked under each learner.
+          </PageHeader>
           <ClassGrowthTable classroom={classroom} />
-        ) : (
-          <EmptyState
-            title="No students in this class yet"
-            message={`Share code ${classroom.join_code} so students can join.`}
-          />
-        )}
+        </section>
       </div>
     );
   }
 
-  const classes = await getStudentClasses(profile.id);
-  const classroom = classes.find((item) => item.id === id);
+  const classroom = await getStudentClassDetail(id, profile.id);
 
   if (!classroom) {
     notFound();
@@ -112,13 +126,20 @@ export default async function ClassDetailPage({
             Quick info
           </p>
           <div className="mt-3 space-y-2 text-base font-bold text-slate-700">
-            <p>{classroom.memberCount} students in this class</p>
+            <p>{classroom.assignments.length} active assignments</p>
             <p>Join code {classroom.join_code}</p>
           </div>
           <ButtonLink href="/dashboard" className="mt-5">
             Back to my courses
           </ButtonLink>
         </div>
+      </section>
+
+      <section className="space-y-4">
+        <PageHeader eyebrow="Assignments" title="Classwork from your teacher">
+          Open each lesson here and your progress will count toward this class.
+        </PageHeader>
+        <StudentClassAssignments assignments={classroom.assignments} />
       </section>
     </div>
   );

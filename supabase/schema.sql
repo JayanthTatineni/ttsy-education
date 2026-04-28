@@ -179,6 +179,15 @@ create table if not exists public.class_memberships (
   unique (class_id, student_id)
 );
 
+create table if not exists public.class_assignments (
+  id uuid primary key default gen_random_uuid(),
+  class_id uuid not null references public.classes(id) on delete cascade,
+  lesson_id uuid not null references public.lessons(id) on delete cascade,
+  assigned_by uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (class_id, lesson_id)
+);
+
 create table if not exists public.student_course_selections (
   id uuid primary key default gen_random_uuid(),
   student_id uuid not null references public.profiles(id) on delete cascade,
@@ -199,6 +208,8 @@ create index if not exists classes_educator_idx on public.classes(educator_id, c
 create index if not exists classes_join_code_idx on public.classes(join_code);
 create index if not exists class_memberships_student_idx on public.class_memberships(student_id, created_at desc);
 create index if not exists class_memberships_class_idx on public.class_memberships(class_id, created_at desc);
+create index if not exists class_assignments_class_idx on public.class_assignments(class_id, created_at desc);
+create index if not exists class_assignments_lesson_idx on public.class_assignments(lesson_id, created_at desc);
 create index if not exists student_course_selections_student_idx on public.student_course_selections(student_id, created_at desc);
 create index if not exists student_course_selections_unit_idx on public.student_course_selections(unit_id, created_at desc);
 
@@ -511,6 +522,7 @@ alter table public.question_attempts enable row level security;
 alter table public.lesson_progress enable row level security;
 alter table public.classes enable row level security;
 alter table public.class_memberships enable row level security;
+alter table public.class_assignments enable row level security;
 alter table public.student_course_selections enable row level security;
 
 drop policy if exists "profiles read own or admin" on public.profiles;
@@ -712,6 +724,34 @@ to authenticated
 using (
   public.is_admin()
   or student_id = auth.uid()
+  or public.owns_class(class_id)
+);
+
+drop policy if exists "class assignments read members owners or admin" on public.class_assignments;
+create policy "class assignments read members owners or admin"
+on public.class_assignments for select
+to authenticated
+using (
+  public.is_admin()
+  or public.owns_class(class_id)
+  or public.is_class_member(class_id)
+);
+
+drop policy if exists "class assignments educator create" on public.class_assignments;
+create policy "class assignments educator create"
+on public.class_assignments for insert
+to authenticated
+with check (
+  public.is_admin()
+  or (assigned_by = auth.uid() and public.owns_class(class_id))
+);
+
+drop policy if exists "class assignments educator delete" on public.class_assignments;
+create policy "class assignments educator delete"
+on public.class_assignments for delete
+to authenticated
+using (
+  public.is_admin()
   or public.owns_class(class_id)
 );
 

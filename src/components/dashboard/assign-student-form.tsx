@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { assignStudentToClassAction } from "@/actions/classroom";
@@ -11,6 +12,7 @@ import {
 } from "@/lib/validation/classroom";
 
 export function AssignStudentForm({ classId }: { classId: string }) {
+  const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const form = useForm<AssignStudentValues>({
@@ -25,6 +27,7 @@ export function AssignStudentForm({ classId }: { classId: string }) {
       setMessage(result.message);
       if (result.ok) {
         form.reset();
+        router.refresh();
       }
     });
   });

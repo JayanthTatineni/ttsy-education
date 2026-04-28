@@ -18,6 +18,7 @@ export type LessonProgress = Tables<"lesson_progress">;
 export type LessonAttempt = Tables<"lesson_attempts">;
 export type Class = Tables<"classes">;
 export type ClassMembership = Tables<"class_memberships">;
+export type ClassAssignment = Tables<"class_assignments">;
 export type StudentCourseSelection = Tables<"student_course_selections">;
 
 export type LessonSummary = Lesson & {
@@ -124,9 +125,38 @@ export type EducatorStudentGrowthRow = {
   completedLessons: number;
   attemptedLessons: number;
   averageBestScore: number;
+  assignedCompletedLessons: number;
+  assignedAttemptedLessons: number;
+  assignedAverageBestScore: number;
   latestActivityAt: string | null;
+};
+
+export type AssignableLesson = Lesson & {
+  subject: Subject;
+  unit: Unit;
+};
+
+export type EducatorClassAssignment = ClassAssignment & {
+  lesson: AssignableLesson;
+  performance: {
+    assignedStudentCount: number;
+    completedStudentCount: number;
+    attemptedStudentCount: number;
+    averageBestScore: number;
+  };
+};
+
+export type StudentClassAssignment = ClassAssignment & {
+  lesson: AssignableLesson;
+  progress: LessonProgress | null;
 };
 
 export type EducatorClassDetail = JoinedClass & {
   students: EducatorStudentGrowthRow[];
+  assignments: EducatorClassAssignment[];
+  availableLessons: AssignableLesson[];
+};
+
+export type StudentClassDetail = JoinedClass & {
+  assignments: StudentClassAssignment[];
 };

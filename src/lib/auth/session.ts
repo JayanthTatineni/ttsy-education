@@ -1,8 +1,56 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { parseGrade } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import type { Profile } from "@/types/domain";
+import type { GradeLevel, Profile, ProfileRole } from "@/types/domain";
+
+function normalizeRole(value: unknown): ProfileRole {
+  return value === "educator" || value === "admin" ? value : "student";
+}
+
+function normalizeGradeLevel(value: unknown, role: ProfileRole): GradeLevel | null {
+  if (role !== "student" || typeof value !== "string") {
+    return null;
+  }
+
+  return parseGrade(value);
+}
+
+async function ensureProfileRow(): Promise<Profile | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user?.email) {
+    return null;
+  }
+
+  const role = normalizeRole(user.user_metadata?.role);
+  const fullName =
+    typeof user.user_metadata?.full_name === "string" && user.user_metadata.full_name.trim()
+      ? user.user_metadata.full_name.trim()
+      : user.email.split("@")[0];
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .upsert({
+      id: user.id,
+      email: user.email,
+      full_name: fullName,
+      role,
+      grade_level: normalizeGradeLevel(user.user_metadata?.grade_level, role),
+    })
+    .select("*")
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data;
+}
 
 export const getCurrentUser = cache(async () => {
   if (!hasSupabaseEnv()) {
@@ -35,8 +83,12 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (error || !data) {
+  if (error) {
     return null;
+  }
+
+  if (!data) {
+    return ensureProfileRow();
   }
 
   return data;

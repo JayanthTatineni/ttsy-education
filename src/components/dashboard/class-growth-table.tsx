@@ -31,6 +31,12 @@ export function ClassGrowthTable({ classroom }: { classroom: EducatorClassDetail
             <p className="text-xs font-bold text-slate-500">
               {row.student.grade_level ? gradeLabel(row.student.grade_level) : "Grade not set"}
             </p>
+            {classroom.assignments.length > 0 ? (
+              <p className="mt-1 text-xs font-bold text-slate-500">
+                {row.assignedCompletedLessons}/{classroom.assignments.length} assigned complete ·{" "}
+                {row.assignedAverageBestScore}% assigned avg
+              </p>
+            ) : null}
           </div>
           <span className="font-bold">{row.completedLessons}</span>
           <span className="font-bold">{row.attemptedLessons}</span>

@@ -26,6 +26,11 @@ export const assignStudentSchema = z.object({
     .transform((value) => value.trim().toLowerCase()),
 });
 
+export const assignLessonSchema = z.object({
+  lessonId: uuid,
+});
+
 export type CreateClassValues = z.output<typeof createClassSchema>;
 export type JoinClassValues = z.output<typeof joinClassSchema>;
 export type AssignStudentValues = z.output<typeof assignStudentSchema>;
+export type AssignLessonValues = z.output<typeof assignLessonSchema>;

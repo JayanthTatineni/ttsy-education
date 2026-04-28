@@ -4,9 +4,11 @@ import { revalidatePath } from "next/cache";
 import { requireEducator, requireStudent } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import {
+  assignLessonSchema,
   assignStudentSchema,
   createClassSchema,
   joinClassSchema,
+  type AssignLessonValues,
   type AssignStudentValues,
   type CreateClassValues,
   type JoinClassValues,
@@ -106,6 +108,13 @@ export async function joinClassAction(
   });
 
   if (joinError) {
+    if (joinError.message.includes("join_class_by_code")) {
+      return {
+        ok: false,
+        message: "Class joins are not set up in Supabase yet. Run the latest schema.sql, then try again.",
+      };
+    }
+
     return { ok: false, message: joinError.message };
   }
 
@@ -161,6 +170,103 @@ export async function assignStudentToClassAction(
   return {
     ok: true,
     message: `Added ${parsed.data.email} to the class.`,
+    id: classId,
+  };
+}
+
+export async function assignLessonToClassAction(
+  classId: string,
+  values: AssignLessonValues,
+): Promise<ClassroomActionState> {
+  const educator = await requireEducator();
+  const parsed = assignLessonSchema.safeParse(values);
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: parsed.error.issues[0]?.message ?? "Choose a lesson to assign.",
+    };
+  }
+
+  const supabase = await createClient();
+  const { data: classroom, error: classError } = await supabase
+    .from("classes")
+    .select("id, grade_level, subject_focus")
+    .eq("id", classId)
+    .eq("educator_id", educator.id)
+    .maybeSingle();
+
+  if (classError) {
+    return { ok: false, message: classError.message };
+  }
+
+  if (!classroom) {
+    return { ok: false, message: "That class was not found." };
+  }
+
+  const { data: lesson, error: lessonError } = await supabase
+    .from("lessons")
+    .select("id, title, grade_level, subject_id, is_published")
+    .eq("id", parsed.data.lessonId)
+    .maybeSingle();
+
+  if (lessonError) {
+    return { ok: false, message: lessonError.message };
+  }
+
+  if (!lesson || !lesson.is_published) {
+    return { ok: false, message: "That lesson is not available to assign." };
+  }
+
+  const { data: subject, error: subjectError } = await supabase
+    .from("subjects")
+    .select("slug")
+    .eq("id", lesson.subject_id)
+    .maybeSingle();
+
+  if (subjectError) {
+    return { ok: false, message: subjectError.message };
+  }
+
+  if (!subject) {
+    return { ok: false, message: "The lesson subject could not be found." };
+  }
+
+  if (classroom.grade_level && lesson.grade_level !== classroom.grade_level) {
+    return {
+      ok: false,
+      message: "This lesson does not match the class grade level.",
+    };
+  }
+
+  if (classroom.subject_focus && subject.slug !== classroom.subject_focus) {
+    return {
+      ok: false,
+      message: "This lesson does not match the class subject focus.",
+    };
+  }
+
+  const { error: assignmentError } = await supabase.from("class_assignments").insert({
+    class_id: classId,
+    lesson_id: lesson.id,
+    assigned_by: educator.id,
+  });
+
+  if (assignmentError) {
+    if (assignmentError.code === "23505") {
+      return { ok: false, message: "That lesson is already assigned to this class." };
+    }
+
+    return { ok: false, message: assignmentError.message };
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/classes");
+  revalidatePath(`/dashboard/classes/${classId}`);
+
+  return {
+    ok: true,
+    message: `Assigned ${lesson.title}.`,
     id: classId,
   };
 }

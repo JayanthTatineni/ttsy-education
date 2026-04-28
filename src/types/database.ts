@@ -331,6 +331,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      class_assignments: {
+        Row: {
+          id: string;
+          class_id: string;
+          lesson_id: string;
+          assigned_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          class_id: string;
+          lesson_id: string;
+          assigned_by: string;
+          created_at?: string;
+        };
+        Update: never;
+        Relationships: [];
+      };
       student_course_selections: {
         Row: {
           id: string;
