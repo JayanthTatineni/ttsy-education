@@ -357,6 +357,12 @@ export type Database = {
         };
         Returns: boolean;
       };
+      join_class_by_code: {
+        Args: {
+          target_join_code: string;
+        };
+        Returns: string;
+      };
       reset_own_account_data: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;

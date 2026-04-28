@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { joinClassAction } from "@/actions/classroom";
@@ -11,6 +12,7 @@ import {
 } from "@/lib/validation/classroom";
 
 export function JoinClassForm() {
+  const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const form = useForm<JoinClassValues>({
@@ -25,6 +27,10 @@ export function JoinClassForm() {
       setMessage(result.message);
       if (result.ok) {
         form.reset();
+        router.refresh();
+        if (result.id) {
+          router.push(`/dashboard/classes/${result.id}`);
+        }
       }
     });
   });

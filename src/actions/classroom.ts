@@ -90,7 +90,7 @@ export async function createClassAction(
 export async function joinClassAction(
   values: JoinClassValues,
 ): Promise<ClassroomActionState> {
-  const student = await requireStudent();
+  await requireStudent();
   const parsed = joinClassSchema.safeParse(values);
 
   if (!parsed.success) {
@@ -101,54 +101,32 @@ export async function joinClassAction(
   }
 
   const supabase = await createClient();
+  const { data: classId, error: joinError } = await supabase.rpc("join_class_by_code", {
+    target_join_code: parsed.data.joinCode,
+  });
+
+  if (joinError) {
+    return { ok: false, message: joinError.message };
+  }
+
   const { data: classroom, error: classError } = await supabase
     .from("classes")
     .select("id,name")
-    .eq("join_code", parsed.data.joinCode)
+    .eq("id", classId)
     .maybeSingle();
 
   if (classError) {
     return { ok: false, message: classError.message };
   }
 
-  if (!classroom) {
-    return { ok: false, message: "That class code was not found." };
-  }
-
-  const { data: existingMembership, error: existingMembershipError } = await supabase
-    .from("class_memberships")
-    .select("id")
-    .eq("class_id", classroom.id)
-    .eq("student_id", student.id)
-    .maybeSingle();
-
-  if (existingMembershipError) {
-    return { ok: false, message: existingMembershipError.message };
-  }
-
-  if (existingMembership) {
-    return {
-      ok: true,
-      message: `You are already in ${classroom.name}.`,
-      id: classroom.id,
-    };
-  }
-
-  const { error } = await supabase.from("class_memberships").insert({
-    class_id: classroom.id,
-    student_id: student.id,
-  });
-
-  if (error) {
-    return { ok: false, message: error.message };
-  }
-
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/classes");
+  revalidatePath(`/dashboard/classes/${classId}`);
+
   return {
     ok: true,
-    message: `Joined ${classroom.name}.`,
-    id: classroom.id,
+    message: `Joined ${classroom?.name ?? "the class"}.`,
+    id: classId,
   };
 }
 

@@ -322,6 +322,23 @@ as $$
   );
 $$;
 
+create or replace function public.is_student_of_educator(target_educator_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.classes
+    join public.class_memberships
+      on class_memberships.class_id = classes.id
+    where classes.educator_id = target_educator_id
+      and class_memberships.student_id = auth.uid()
+  );
+$$;
+
 create or replace function public.is_class_member(target_class_id uuid)
 returns boolean
 language sql
@@ -335,6 +352,40 @@ as $$
     where class_id = target_class_id
       and student_id = auth.uid()
   );
+$$;
+
+create or replace function public.join_class_by_code(target_join_code text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_user_id uuid;
+  target_class_id uuid;
+begin
+  current_user_id := auth.uid();
+
+  if current_user_id is null then
+    raise exception 'Not authenticated.';
+  end if;
+
+  select id
+  into target_class_id
+  from public.classes
+  where upper(join_code) = upper(trim(target_join_code))
+  limit 1;
+
+  if target_class_id is null then
+    raise exception 'That class code was not found.';
+  end if;
+
+  insert into public.class_memberships (class_id, student_id)
+  values (target_class_id, current_user_id)
+  on conflict (class_id, student_id) do nothing;
+
+  return target_class_id;
+end;
 $$;
 
 create or replace function public.owns_class(target_class_id uuid)
@@ -467,7 +518,12 @@ drop policy if exists "profiles read own or class educator or admin" on public.p
 create policy "profiles read own or class educator or admin"
 on public.profiles for select
 to authenticated
-using (id = auth.uid() or public.is_admin() or public.educates_student(id));
+using (
+  id = auth.uid()
+  or public.is_admin()
+  or public.educates_student(id)
+  or public.is_student_of_educator(id)
+);
 
 drop policy if exists "profiles insert own" on public.profiles;
 create policy "profiles insert own"

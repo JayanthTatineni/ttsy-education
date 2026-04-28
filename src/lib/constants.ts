@@ -80,6 +80,61 @@ export const STARTER_TEXAS_TOPICS: Record<string, string[]> = {
     "physical properties",
     "forces and motion",
   ],
+  "foundations-alphabet-and-colors": [
+    "letter names and sounds",
+    "sorting colors",
+    "describing patterns",
+  ],
+  "science-organisms-and-environment": [
+    "living things and needs",
+    "food chains and food webs",
+    "caring for habitats",
+  ],
+  "technology-digital-literacy": [
+    "safe device habits",
+    "searching and researching",
+    "being a kind digital citizen",
+  ],
+  "engineering-scratch-projects": [
+    "coding with blocks",
+    "animations and games",
+    "testing and improving projects",
+  ],
+  "science-plants": [
+    "plant parts",
+    "plant life cycles",
+    "how plants help food chains",
+  ],
+  "math-addition-and-subtraction": [
+    "adding within 100",
+    "subtracting with strategies",
+    "solving story problems",
+  ],
+  "math-big-addition-and-subtraction": [
+    "regrouping",
+    "checking with estimation",
+    "multi-step number stories",
+  ],
+  "math-multiplication-and-division": [
+    "equal groups",
+    "arrays and products",
+    "division with remainders",
+  ],
+  "math-place-value-fractions-and-decimals": [
+    "place value",
+    "fraction models",
+    "decimal connections",
+  ],
+  "science-water-cycle": [
+    "evaporation",
+    "condensation and precipitation",
+    "water on Earth",
+  ],
+  "science-force-and-energy": [
+    "pushes and pulls",
+    "light, sound, and heat",
+    "energy transfer",
+  ],
 };
 
 export function gradeLabel(grade: GradeLevel) {
